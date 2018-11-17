@@ -1,4 +1,7 @@
-from setuptools import setup
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    from distutils.core import setup, find_packages
 
 NAME = "backup_win_env"
 VERSION = "1.0.0"
@@ -23,6 +26,7 @@ setup(
         "pyyaml",
         "pywin32"
     ],
+    packages=find_packages(),
     name=NAME,
     version=VERSION,
     author=AUTHOR,
