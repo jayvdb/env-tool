@@ -151,7 +151,7 @@ class RegItem:
             package = yaml.load(file)
         self.values = []
         for _ in package:
-            self.values.append(RegValue(*_))
+            self.values.append(RegValue().unpack(_))
 
 def readUserEnvReg() -> RegItem:
     """
@@ -182,7 +182,7 @@ def writeUserEnvReg(objRegItem:RegItem):
     emptyUserEnvReg()
     with winreg.OpenKeyEx(*gUSER_ENV_REG_KEY) as key:
         for reg_value in objRegItem.values:
-            winreg.SetValue(key, reg_value.name, reg_value.type, reg_value.value)
+            winreg.SetValueEx(key, reg_value.name, 0, reg_value.type, reg_value.value)
 
 def emptyUserEnvReg():
     """
