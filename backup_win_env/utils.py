@@ -61,7 +61,7 @@ class RegValue:
         self.value = value
         self.type = type
     def __repr__(self):
-        return "RegValue({}, {}, {})".format(self.name, self.value, self.type)
+        return "RegValue({}, {}, {})".format(self.name, self.value, RegValue.REG_TYPE[self.type])
 
     def wrap(self):
         """
