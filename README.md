@@ -2,12 +2,6 @@ backup_win_env 是一个备份 Windows 系统用户环境变量的工具.
 
 # 安装
 
-## 从 Pypi 下载
-
-```sh
-pip install backup_win_env --user
-```
-
 ## 从源码安装
 
 ```sh
