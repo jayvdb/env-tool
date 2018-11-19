@@ -179,7 +179,7 @@ def writeUserEnvReg(objRegItem:RegItem):
     覆写当前用户的环境变量注册表项, 原有值将被清空!
     使用了全局变量 `gUSER_ENV_REG_KEY`
     """
-    emptyUserEnvReg()
+    # emptyUserEnvReg() # 也许不清空更好一些?
     with winreg.OpenKeyEx(*gUSER_ENV_REG_KEY, 0, winreg.KEY_SET_VALUE) as key:
         for reg_value in objRegItem.values:
             winreg.SetValueEx(key, reg_value.name, 0, reg_value.type, reg_value.value)
