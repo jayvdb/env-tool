@@ -113,8 +113,8 @@ class RegValue:
             true_value = ";".join(self.value)
         else:
             true_value = self.value[0]
-        
-        return (self.name, true_value, RegValue.REG_TYPE_R[self.type_])
+
+        return (self.name, true_value, RegValue.REG_TYPE_R.get(self.type_))
 
     def wrap(self):
         """
@@ -138,7 +138,7 @@ class RegValue:
             values = self.value.split(";")
         else:
             values = [self.value]
-        type_ = RegValue.REG_TYPE[self.type_]
+        self.type_ = RegValue.REG_TYPE.get(self.type_)
         self.value = values
         return self
 
@@ -201,7 +201,7 @@ class RegItem:
     ====
 
     - ``name`` 该注册表项的名称.
-    - ``child_item`` 
+    - ``child_item``
     - ``values`` 该注册表下的值, 是一个字典, 按照 ``value_name``:``value`` 的形
     式存储.
     """
@@ -257,7 +257,7 @@ class RegItem:
         for i in self.values:
             yield self.values.get(i)
 
-    def toYAML(self, path):
+    def toYAML(self, path,):
         """
         将本 RegItem 实例导出到 path 所指的 .yml 文件中
 
@@ -265,13 +265,18 @@ class RegItem:
         ====
 
         - ``path`` .yml 文件路径
+
+        Return
+        ======
+
+        .yml 文件字符串
         """
         package = [
             self.values[value_name].packYAML() for value_name in self.values
         ]
         with open(path, "wt", encoding="utf-8") as file:
-            yaml.dump(data=package, stream=file)
-    
+            yaml.dump(data=package, stream=file, width=1)
+
     def fromYAML(self, path):
         """
         从 .yml 文件中导入, 文本格式参考导出内容
@@ -287,7 +292,7 @@ class RegItem:
             reg_value = RegValue().unpackYAML(_)
             self.updateValue(reg_value)
 
-    def update(self, other: RegItem):
+    def update(self, other):
         """
         将自身与另一个注册表项合并
         """
@@ -309,7 +314,7 @@ class RegItem:
         将自身写入注册表
         """
         with winreg.OpenKeyEx(self.key, self.name, 0, winreg.KEY_SET_VALUE) as key:
-            for name, type_, value in self.getValue():
+            for name, type_, value in self.getValue().transValue():
                 winreg.SetValueEx(key, name, 0, type_, value)
 
     def readReg(self):
