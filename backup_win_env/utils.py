@@ -98,7 +98,7 @@ class RegValue:
         self.multi_value = multi_value
 
     def __repr__(self):
-        return "RegValue({}, {}, {})".format(self.name, self.sep.join(self.value), RegValue.REG_TYPE[self.type])
+        return "RegValue({}, {}, {})".format(self.name, self.value, self.type_)
 
     def transValue(self):
         """
@@ -127,15 +127,20 @@ class RegValue:
         Return
         ======
 
-        ``(name, values:list, type:str)`` 元组
+        ``self``
         """
 
-        if self.type_ in ("REG_SZ", "REG_EXPAND_SZ", "REG_MULTI_SZ"):
+        if self.type_ in (
+            self.REG_TYPE_R.get("REG_SZ"),
+            self.REG_TYPE_R.get("REG_EXPAND_SZ"),
+            self.REG_TYPE_R.get("REG_MULTI_SZ"),
+        ):
             values = self.value.split(";")
         else:
-            values = list(self.value)
-        type_ = RegValue.REG_TYPE[self.type]
-        return (self.name, values, type_)
+            values = [self.value]
+        type_ = RegValue.REG_TYPE[self.type_]
+        self.value = values
+        return self
 
     def packYAML(self):
         """
@@ -213,7 +218,7 @@ class RegItem:
     def __repr__(self):
         output = ["--Name--------Value-------------Type"]
         for i in self.values:
-            output.append(str(i))
+            output.append(str(self.values.get(i)))
         return "\n".join(output)
 
     def updateValue(self, reg_value):
@@ -278,10 +283,26 @@ class RegItem:
         """
         with open(path, "rt", encoding="utf-8") as file:
             package = yaml.load(file)
-        self.values = []
         for _ in package:
             reg_value = RegValue().unpackYAML(_)
-            self.values[reg_value.name] = reg_value
+            self.updateValue(reg_value)
+
+    def update(self, other: RegItem):
+        """
+        将自身与另一个注册表项合并
+        """
+        if isinstance(other, RegItem) and self.name == other.name:
+            for value in other.getValue:
+                self.updateValue(value)
+        else:
+            raise TypeError("self other 不是同一个注册表")
+
+    def updateReg(self):
+        """
+        将自身与实际注册表合并
+        """
+        reality = RegItem(self.name)
+        self.update(reality)
 
     def toReg(self):
         """
@@ -324,6 +345,7 @@ def writeUserEnvReg(objRegItem: RegItem):
     """
     使用了全局变量 ``gUSER_ENV_REG_KEY``
     """
+    objRegItem.updateReg()
     objRegItem.toReg()
 
 def emptyUserEnvReg():
@@ -345,7 +367,8 @@ def exportUserEnvReg(path, view):
     """
     将用户变量的注册表导出至 path 所指的 .yml 文件
 
-    # Para
+    Para
+    ====
 
     - ``path`` .yml 文件路径
     - ``view`` 是否预览效果, 如果是, 则仅打印环境变量而不进行处理
@@ -359,7 +382,9 @@ def exportUserEnvReg(path, view):
 def importUserEnvReg(path, view):
     """
     从 path 所指的 .yml 文件导入环境变量至用户变量的注册表
-    # Para
+
+    Para
+    ====
 
     - ``path`` .yml 文件路径
     - ``view`` 是否预览效果, 如果是, 则仅打印环境变量而不进行处理
