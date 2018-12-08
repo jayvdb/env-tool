@@ -271,11 +271,9 @@ class RegItem:
 
         .yml 文件字符串
         """
-        package = [
-            self.values[value_name].packYAML() for value_name in self.values
-        ]
+        package = [value.packYAML() for value in self.getValue()]
         with open(path, "wt", encoding="utf-8") as file:
-            yaml.dump(data=package, stream=file, width=1)
+            yaml.dump(data=package, stream=file)
 
     def fromYAML(self, path):
         """
