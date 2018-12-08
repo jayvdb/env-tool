@@ -200,10 +200,15 @@ class RegItem:
     - ``values`` 该注册表下的值, 是一个字典, 按照 ``value_name``:``value`` 的形
     式存储.
     """
+    NAME_KEY = {
+        "Environment": winreg.HKEY_CURRENT_USER
+    }
+
     def __init__(self, name):
         self.name = name
         self.child_item = None
         self.values = dict()
+        self.key = RegItem.NAME_KEY.get(self.name, winreg.HKEY_CURRENT_USER)
 
     def __repr__(self):
         output = ["--Name--------Value-------------Type"]
@@ -236,6 +241,16 @@ class RegItem:
             self.values[reg_value.name] = reg_value
         else:
             self.values[reg_value.name].update(reg_value)
+
+    def getValue(self):
+        """
+        Return
+        ======
+
+        ``self.values`` 的迭代器.
+        """
+        for i in self.values:
+            yield self.values.get(i)
 
     def toYAML(self, path):
         """
@@ -272,37 +287,44 @@ class RegItem:
         """
         将自身写入注册表
         """
-        pass
+        with winreg.OpenKeyEx(self.key, self.name, 0, winreg.KEY_SET_VALUE) as key:
+            for name, type_, value in self.getValue():
+                winreg.SetValueEx(key, name, 0, type_, value)
+
+    def readReg(self):
+        """
+        读取注册表项目
+        """
+        with winreg.OpenKeyEx(self.key, self.name, 0, winreg.KEY_READ) as key:
+            _ = 0
+            while True:
+                try:
+                    reg_value = RegValue(*winreg.EnumValue(key, _)).wrap()
+                    self.updateValue(reg_value)
+                    # EnumValue 返回 元组 (reg_name, reg_value, reg_type)
+                    _ +=1
+                except OSError:
+                    break
 
 def readUserEnvReg() -> RegItem:
     """
     读取当前用户的环境变量注册表项
     使用了全局变量 `gUSER_ENV_REG_KEY`
 
-    # Return
+    Return
+    ======
 
     返回名为 ``Environment`` 的 RegItem 实例.
     """
-    objRegItem = RegItem("Environment")
-    with winreg.OpenKeyEx(*gUSER_ENV_REG_KEY) as key:
-        _ = 0
-        while True:
-            try:
-                objRegItem.addValue(*winreg.EnumValue(key, _))
-                # EnumValue 返回 元组 (reg_name, reg_value, reg_type)
-                _ +=1
-            except OSError:
-                break
-    return objRegItem
+    reg_environment = RegItem("Environment")
+    reg_environment.readReg()
+    return reg_environment
 
-def writeUserEnvReg(objRegItem:RegItem):
+def writeUserEnvReg(objRegItem: RegItem):
     """
-    覆写当前用户的环境变量注册表项, 原有值将被清空!
     使用了全局变量 ``gUSER_ENV_REG_KEY``
     """
-    with winreg.OpenKeyEx(*gUSER_ENV_REG_KEY, 0, winreg.KEY_SET_VALUE) as key:
-        for reg_value in objRegItem.values:
-            winreg.SetValueEx(key, reg_value.name, 0, reg_value.type, reg_value.value)
+    objRegItem.toReg()
 
 def emptyUserEnvReg():
     """
