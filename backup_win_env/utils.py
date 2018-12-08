@@ -1,5 +1,6 @@
 import winreg
 import yaml
+from io import StringIO
 
 """
 Python 与 Windows NT 系统注册表中 "Environment" 项的交互.
@@ -272,8 +273,10 @@ class RegItem:
         .yml 文件字符串
         """
         package = [value.packYAML() for value in self.getValue()]
+        content = StringIO()
+        yaml.dump(data=package, stream=content)
         with open(path, "wt", encoding="utf-8") as file:
-            yaml.dump(data=package, stream=file)
+            file.write(content) # todo: 格式美化, 列表中每一项单行输出
 
     def fromYAML(self, path):
         """
