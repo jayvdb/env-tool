@@ -298,7 +298,7 @@ class RegItem:
         将自身与另一个注册表项合并
         """
         if isinstance(other, RegItem) and self.name == other.name:
-            for value in other.getValue:
+            for value in other.getValue():
                 self.updateValue(value)
         else:
             raise TypeError("self other 不是同一个注册表")
@@ -315,7 +315,8 @@ class RegItem:
         将自身写入注册表
         """
         with winreg.OpenKeyEx(self.key, self.name, 0, winreg.KEY_SET_VALUE) as key:
-            for name, type_, value in self.getValue().transValue():
+            for item in self.getValue():
+                name, value, type_ = item.transValue()
                 winreg.SetValueEx(key, name, 0, type_, value)
 
     def readReg(self):
