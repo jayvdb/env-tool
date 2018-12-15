@@ -3,13 +3,13 @@ try:
 except ImportError:
     from distutils.core import setup, find_packages
 
-NAME = "backup_win_env"
+NAME = "env-tool"
 VERSION = "1.0.0"
 AUTHOR = "Zombie110year"
 EMAIL = "zombie110year@outlook.com"
-URL = "https://github.com/zombie110year/backup_win_env"
+URL = "https://github.com/zombie110year/envtools"
 DESCRIPTION = \
-"""
+    """
 使用 pywin32, pyyaml 包, 用于导入/导出用户环境变量
 
 操作 Windows 系统的注册表, 导出的文本格式为 yaml
@@ -18,8 +18,8 @@ LICENSE = open("LICENSE", "rt", encoding="utf-8").read()
 
 setup(
     entry_points={
-        "console_scripts":[
-            "backupUserEnv = backup_win_env.__main__"
+        "console_scripts": [
+            "env-tool = envtool.__main__"
         ]
     },
     requires=[
