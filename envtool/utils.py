@@ -11,6 +11,7 @@ Python 与 Windows NT 系统注册表中 "Environment" 项的交互.
 
 gUSER_ENV_REG_KEY = (winreg.HKEY_CURRENT_USER, "Environment")
 
+
 class RegValue:
     """
     注册表中的键值有 name, value, type_ 三个属性.
@@ -189,6 +190,7 @@ class RegValue:
         else:
             self.value = other.value
 
+
 class RegItem:
     """
     注册表项, 项之下可能有子项, 当前项可能有多个键值.
@@ -276,7 +278,7 @@ class RegItem:
         content = StringIO()
         yaml.dump(data=package, stream=content)
         with open(path, "wt", encoding="utf-8") as file:
-            file.write(content) # todo: 格式美化, 列表中每一项单行输出
+            file.write(content)  # todo: 格式美化, 列表中每一项单行输出
 
     def fromYAML(self, path):
         """
@@ -330,9 +332,10 @@ class RegItem:
                     reg_value = RegValue(*winreg.EnumValue(key, _)).wrap()
                     self.updateValue(reg_value)
                     # EnumValue 返回 元组 (reg_name, reg_value, reg_type)
-                    _ +=1
+                    _ += 1
                 except OSError:
                     break
+
 
 def readUserEnvReg() -> RegItem:
     """
@@ -348,12 +351,14 @@ def readUserEnvReg() -> RegItem:
     reg_environment.readReg()
     return reg_environment
 
+
 def writeUserEnvReg(objRegItem: RegItem):
     """
     使用了全局变量 ``gUSER_ENV_REG_KEY``
     """
     objRegItem.updateReg()
     objRegItem.toReg()
+
 
 def emptyUserEnvReg():
     """
@@ -370,6 +375,7 @@ def emptyUserEnvReg():
             except OSError:
                 break
 
+
 def exportUserEnvReg(path, view):
     """
     将用户变量的注册表导出至 path 所指的 .yml 文件
@@ -385,6 +391,7 @@ def exportUserEnvReg(path, view):
         env.toYAML(path)
     else:
         print(env)
+
 
 def importUserEnvReg(path, view):
     """
