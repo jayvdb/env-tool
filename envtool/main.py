@@ -24,10 +24,10 @@ def parseArgs():
                         default=False, action="store_true", help="预览效果, 但不执行")
     args = parser.parse_args()
 
-    if args.input != None and args.output == None:
+    if (not args.input is None) and (args.output is None):
         args.INPUT_not_OUTPUT = True
         args.input = str(pathlib.Path(args.input).absolute())
-    elif args.output != None and args.input == None:
+    elif (not args.output is None) and (args.input is None):
         args.INPUT_not_OUTPUT = False
         args.output = str(pathlib.Path(args.output).absolute())
     else:
